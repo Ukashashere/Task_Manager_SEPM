@@ -12,7 +12,7 @@ export const createTask = async (req, res) => {
     if (team?.length > 1) {
       text = text + ` and ${team?.length - 1} others.`;
     }
-
+      
     text =
       text +
       ` The task priority is set a ${priority} priority, so check and act accordingly. The task date is ${new Date(
