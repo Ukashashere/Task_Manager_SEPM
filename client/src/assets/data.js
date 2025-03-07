@@ -190,14 +190,7 @@ export const summary = {
         isActive: true,
         createdAt: "2025-02-07T05:37:58.862Z",
       },
-      {
-        _id: "65c30b96e639681a13def0b5",
-        name: "Aviral Jaiswal",
-        title: "Employee",
-        role: "Manager",
-        isActive: true,
-        createdAt: "2025-02-26T04:48:22.519Z",
-      },
+      
       
     
   ],
