@@ -3,7 +3,7 @@ import { Tab } from "@headlessui/react";
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
-
+ /* Can not tell what is happening */
 export default function Tabs({ tabs, setSelected, children }) {
   return (
     <div className='w-full px-1 sm:px-0'>
