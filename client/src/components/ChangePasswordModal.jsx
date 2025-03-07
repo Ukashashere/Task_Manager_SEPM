@@ -1,8 +1,6 @@
-import { useState } from "react";
-import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../redux/reducers";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { authApi } from "../utils/authApi";
 
 const ChangePasswordModal = ({ onClose }) => {
   const [oldPassword, setOldPassword] = useState("");
@@ -12,8 +10,11 @@ const ChangePasswordModal = ({ onClose }) => {
   const [success, setSuccess] = useState(null);
 
   const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  
+  useEffect(() => {
+    console.log("🔹 User from Redux:", user);
+    console.log("🔹 Token from Redux:", user?.token);
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,27 +24,33 @@ const ChangePasswordModal = ({ onClose }) => {
       return;
     }
 
+    const token = user?.token;
+    if (!token) {
+      setError("Unauthorized: Token is missing. Please log in again.");
+      return;
+    }
+
     try {
-      const response = await axios.put(
-        "/api/users/change-password",
+      console.log("🔹 Sending Change Password Request with token:", token);
+
+      const response = await authApi.changePassword(
         { oldPassword, newPassword },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
+        token
       );
 
-      setSuccess("Password changed successfully! Redirecting to login...");
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      setSuccess("Password changed successfully!");
       setError(null);
 
       setTimeout(() => {
-        dispatch(logout());
-        localStorage.removeItem("authToken");
-        navigate("/login");
+        onClose();
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      console.error("❌ Change Password Error:", err);
+      setError(err.message || "Something went wrong");
     }
   };
 
@@ -82,7 +89,11 @@ const ChangePasswordModal = ({ onClose }) => {
           />
 
           <div className="flex justify-between mt-4">
-            <button type="button" onClick={onClose} className="bg-gray-500 text-white px-4 py-2 rounded">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded"
+            >
               Cancel
             </button>
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">

@@ -12,6 +12,7 @@ import Progress from "./pages/progress";
 import Todo from "./pages/todo";
 import Sidebar from "./components/Sidebar"; // Ensure Sidebar exists
 import Navbar from "./components/Navbar"; // Ensure Navbar exists
+import { Toaster } from "react-hot-toast";
 
 // Layout component for protected routes
 function Layout() {
@@ -22,11 +23,11 @@ function Layout() {
   }
 
   return user ? (
-    <div className='w-full h-screen flex flex-col md:flex-row'>
-      <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
+    <div className="w-full h-screen flex flex-col md:flex-row">
+      <div className="w-1/5 h-screen bg-white sticky top-0 hidden md:block">
         <Sidebar />
       </div>
-      <div className='flex-1 overflow-y-auto'>
+      <div className="flex-1 overflow-y-auto">
         <Navbar />
 
         <div className="p-4">
@@ -41,21 +42,23 @@ function Layout() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<Login />} />
-      <Route element={<Layout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/team" element={<Users />} />
-        <Route path="/trashed" element={<Trash />} />
-        <Route path="/task/:id" element={<TaskDetails />} />
-        <Route path="/completed" element={<Completed />} /> 
-        <Route path="/progress" element={<Progress />} /> 
-        <Route path="/todo" element={<Todo />} /> 
-
-      </Route>
-    </Routes>
+    <>
+      <Toaster /> {/* Keep this inside the correct App function */}
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/team" element={<Users />} />
+          <Route path="/trashed" element={<Trash />} />
+          <Route path="/task/:id" element={<TaskDetails />} />
+          <Route path="/completed" element={<Completed />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/todo" element={<Todo />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
 
