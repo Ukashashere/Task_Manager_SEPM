@@ -16,6 +16,17 @@ export const createJWT = (res, userId) => {
     expiresIn: "1d",
   });
 
+  // Set the token as a cookie (optional)
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+    sameSite: "strict",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+
+  return token; // Return the token
+
+
   // Change sameSite from strict to none when you deploy your app
   res.cookie("token", token, {
     httpOnly: true,

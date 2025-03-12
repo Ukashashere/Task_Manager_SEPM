@@ -7,7 +7,8 @@ import UserList from "./UserList";
 import SelectList from "../SelectList";
 import { BiImages } from "react-icons/bi";
 import Button from "../Button";
-import { toast } from "react-hot-toast"; // Import toast for notifications
+import { toast } from "react-hot-toast";
+import { createTask } from "../../utils/taskservice"; // Import the API service
 
 const LISTS = ["TODO", "IN PROGRESS", "COMPLETED"];
 const PRIORIRY = ["HIGH", "MEDIUM", "NORMAL", "LOW"];
@@ -24,10 +25,44 @@ const AddTask = ({ open, setOpen }) => {
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  const submitHandler = (data) => {
-    console.log("Task Data:", data); // Debugging output
-    setOpen(false); // Close modal
-    toast.success("Task added successfully"); // Show success message
+  const submitHandler = async (data) => {
+    try {
+      // Prepare task data
+      const taskData = {
+        title: data.title,
+        team: team, // Include the selected team
+        stage: stage.toLowerCase(), // Convert stage to lowercase
+        date: data.date,
+        priority: priority.toLowerCase(), // Convert priority to lowercase
+        assets: assets, // Include assets if any
+      };
+  
+      console.log("Sending task data:", taskData); // Debugging
+  
+      // Call the API to create the task
+      const response = await createTask(taskData);
+  
+      // Handle success
+      console.log("Task created successfully:", response);
+      toast.success("Task added successfully");
+      setOpen(false); // Close the modal
+  
+      // Reset the form fields (optional)
+      setTeam([]);
+      setStage(LISTS[0]);
+      setPriority(PRIORIRY[2]);
+      setAssets([]);
+    } catch (error) {
+      // Handle error
+      console.error("Error creating task:", error);
+  
+      // Display a more specific error message if available
+      if (error.message) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to add task. Please try again.");
+      }
+    }
   };
 
   const handleSelect = (e) => {

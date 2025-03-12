@@ -8,23 +8,7 @@ export const createTask = async (req, res) => {
 
     const { title, team, stage, date, priority, assets } = req.body;
 
-    let text = "New task has been assigned to you";
-    if (team?.length > 1) {
-      text = text + ` and ${team?.length - 1} others.`;
-    }
-      
-    text =
-      text +
-      ` The task priority is set a ${priority} priority, so check and act accordingly. The task date is ${new Date(
-        date
-      ).toDateString()}. Thank you!!!`;
-
-    const activity = {
-      type: "assigned",
-      activity: text,
-      by: userId,
-    };
-
+    // Create the task
     const task = await Task.create({
       title,
       team,
@@ -32,18 +16,14 @@ export const createTask = async (req, res) => {
       date,
       priority: priority.toLowerCase(),
       assets,
-      activities: activity,
+      activities: {
+        type: "assigned",
+        activity: `New task has been assigned to you and ${team.length - 1} others.`,
+        by: userId,
+      },
     });
 
-    await Notice.create({
-      team,
-      text,
-      task: task._id,
-    });
-
-    res
-      .status(200)
-      .json({ status: true, task, message: "Task created successfully." });
+    res.status(200).json({ status: true, task, message: "Task created successfully." });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });

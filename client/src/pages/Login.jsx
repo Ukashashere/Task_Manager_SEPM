@@ -28,16 +28,27 @@ const Login = () => {
     setLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
-
+  
     try {
       if (isLogin) {
         // Login Logic
         const response = await authApi.login(data);
         console.log("API Response:", response);
-
+  
         if (response && response._id) {
           console.log("Dispatching setUser action with user data");
           dispatch(setUser(response));
+  
+          // Store the JWT token in localStorage
+          if (response.token) {
+            localStorage.setItem("token", response.token);
+            console.log("Token stored in localStorage:", response.token);
+          } else {
+            console.error("Token not found in the response");
+            throw new Error("Token not found. Please try again.");
+          }
+  
+          setSuccessMessage("Login successful! Redirecting...");
           setTimeout(() => navigate("/dashboard"), 2000);
         } else {
           console.error("Login failed:", response?.message || "Unknown error");
@@ -50,10 +61,10 @@ const Login = () => {
           role: "employee", // Default role
           title: "New Employee", // Default title
         };
-
+  
         const response = await authApi.register(signUpData);
         console.log("Sign-up Response:", response);
-
+  
         if (response && response._id) {
           setSuccessMessage("Account created successfully! Redirecting...");
           setTimeout(() => setIsLogin(true), 2000); // Switch to login after signup
@@ -63,7 +74,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Error:", error);
-      setErrorMessage("Something went wrong. Please try again later.");
+      setErrorMessage(error.message || "Something went wrong. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -189,5 +200,5 @@ const Login = () => {
     </div>
   );
 };
- 
+
 export default Login;

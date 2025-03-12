@@ -1,34 +1,19 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
-const protectRoute = async (req, res, next) => {
+const protectRoute = (req, res, next) => {
   try {
-    let token = req.cookies?.token;
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
-    if (token) {
-      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-      const resp = await User.findById(decodedToken.userId).select(
-        "isAdmin email"
-      );
-
-      req.user = {
-        email: resp.email,
-        isAdmin: resp.isAdmin,
-        userId: decodedToken.userId,
-      };
-
-      next();
-    } else {
-      return res
-        .status(401)
-        .json({ status: false, message: "Not authorized. Try login again." });
+    if (!token) {
+      return res.status(401).json({ status: false, message: "Not authorized. Try login again." });
     }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Attach the decoded user data to the request object
+    next();
   } catch (error) {
-    console.error(error);
-    return res
-      .status(401)
-      .json({ status: false, message: "Not authorized. Try login again." });
+    return res.status(401).json({ status: false, message: "Not authorized. Try login again." });
   }
 };
 

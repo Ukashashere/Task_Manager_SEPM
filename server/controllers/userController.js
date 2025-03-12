@@ -50,9 +50,19 @@ export const loginUser = async (req, res) => {
     const isMatch = await user.matchPassword(password);
 
     if (user && isMatch) {
-      createJWT(res, user._id);
+      const token = createJWT(res, user._id); // Generate the token
       user.password = undefined;
-      res.status(200).json(user);
+
+      // Return the user data and token
+      res.status(200).json({
+        status: true,
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        title: user.title,
+        token, // Include the token in the response
+      });
     } else {
       return res.status(401).json({ status: false, message: "Invalid email or password" });
     }
