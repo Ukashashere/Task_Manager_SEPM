@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
  
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/dashboard";
 import Tasks from "./pages/Tasks";
 import Users from "./pages/Users";
 import Trash from "./pages/Trash";
