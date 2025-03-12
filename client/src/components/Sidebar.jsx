@@ -52,13 +52,20 @@ const linkData = [
 
 const Sidebar = () => {
   const { user } = useSelector((state) => state.auth);
+  console.log("User in Sidebar:", user); // Debugging
 
   const dispatch = useDispatch();
   const location = useLocation();
 
   const path = location.pathname.split("/")[1];
 
-  const sidebarLinks = user?.isAdmin ? linkData : linkData.slice(0, 5);
+  // Filter links based on user role
+  const sidebarLinks = user?.role === "Admin"
+    ? linkData // Show all links for admin
+    : linkData.filter(
+        (link) =>
+          link.label !== "Trash" && link.label !== "Team" // Hide Trash and Team for non-admin
+      );
 
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
@@ -79,8 +86,9 @@ const Sidebar = () => {
       </Link>
     );
   };
+
   return (
-    <div className='w-full  h-full flex flex-col gap-6 p-5'>
+    <div className='w-full h-full flex flex-col gap-6 p-5'>
       <h1 className='flex gap-1 items-center'>
         <p className='bg-blue-600 p-2 rounded-full'>
           <MdOutlineAddTask className='text-white text-2xl font-black' />
