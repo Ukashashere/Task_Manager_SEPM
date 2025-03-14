@@ -6,12 +6,13 @@ import Button from "../components/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../redux/slices/authSlice";
 import { authApi } from "../utils/authApi";
+import { FiMail, FiLock, FiUser } from "react-icons/fi"; // Import FiUser for the Full Name field
 
 const Login = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true); // Toggle between login & sign-up
+  const [isLogin, setIsLogin] = useState(true);
 
   const {
     register,
@@ -28,18 +29,15 @@ const Login = () => {
     setLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
-  
+
     try {
       if (isLogin) {
-        // Login Logic
         const response = await authApi.login(data);
         console.log("API Response:", response);
-  
+
         if (response && response._id) {
-          console.log("Dispatching setUser action with user data");
           dispatch(setUser(response));
-  
-          // Store the JWT token in localStorage
+
           if (response.token) {
             localStorage.setItem("token", response.token);
             console.log("Token stored in localStorage:", response.token);
@@ -47,7 +45,7 @@ const Login = () => {
             console.error("Token not found in the response");
             throw new Error("Token not found. Please try again.");
           }
-  
+
           setSuccessMessage("Login successful! Redirecting...");
           setTimeout(() => navigate("/dashboard"), 2000);
         } else {
@@ -55,19 +53,18 @@ const Login = () => {
           setErrorMessage(response?.message || "Invalid login credentials. Please try again.");
         }
       } else {
-        // Sign Up Logic - Add default role and title
         const signUpData = {
           ...data,
-          role: "employee", // Default role
-          title: "New Employee", // Default title
+          role: "employee",
+          title: "New Employee",
         };
-  
+
         const response = await authApi.register(signUpData);
         console.log("Sign-up Response:", response);
-  
+
         if (response && response._id) {
           setSuccessMessage("Account created successfully! Redirecting...");
-          setTimeout(() => setIsLogin(true), 2000); // Switch to login after signup
+          setTimeout(() => setIsLogin(true), 2000);
         } else {
           setErrorMessage(response?.message || "Something went wrong.");
         }
@@ -89,7 +86,6 @@ const Login = () => {
   return (
     <div className="w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#f3f4f6]">
       <div className="w-full md:w-auto flex gap-0 md:gap-40 flex-col md:flex-row items-center justify-center">
-        
         {/* Left Side */}
         <div className="h-full w-full lg:w-2/3 flex flex-col items-center justify-center">
           <div className="w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20">
@@ -97,8 +93,8 @@ const Login = () => {
               Manage all your tasks in one place!
             </span>
             <p className="flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-blue-700">
-              <span>Cloud-Based</span>
-              <span>Task Manager</span>
+              <span>Task Management</span>
+              <span>System</span>
             </p>
 
             <div className="cell">
@@ -135,6 +131,7 @@ const Login = () => {
                     required: "Full Name is required!",
                   })}
                   error={errors.name ? errors.name.message : ""}
+                  icon={<FiUser className="text-gray-400" />} // Add person icon
                 />
               )}
 
@@ -148,6 +145,7 @@ const Login = () => {
                   required: "Email Address is required!",
                 })}
                 error={errors.email ? errors.email.message : ""}
+                icon={<FiMail className="text-gray-400" />} // Add email icon
               />
 
               <Textbox
@@ -160,6 +158,7 @@ const Login = () => {
                   required: "Password is required!",
                 })}
                 error={errors.password ? errors.password.message : ""}
+                icon={<FiLock className="text-gray-400" />} // Add password icon
               />
 
               {isLogin && (
