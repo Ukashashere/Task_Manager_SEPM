@@ -186,7 +186,7 @@ export const summary = {
         _id: "65c317360fd860f958baa08e",
         name: "Ukasha Ahmad",
         title: "Employee",
-        role: "Employee",
+        role: "Manager",
         isActive: true,
         createdAt: "2025-02-07T05:37:58.862Z",
       },
@@ -204,19 +204,19 @@ export const summary = {
 export const chartData = [
   {
     name: "High",
-    total: 3000,
+    total: 100,
   },
   {
     name: "Medium",
-    total: 2000,
+    total: 75,
   },
   {
     name: "Normal",
-    total: 1500,
+    total: 50,
   },
   {
     name: "Low",
-    total: 500,
+    total: 25,
   },
 ];
 

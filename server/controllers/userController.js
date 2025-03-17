@@ -95,6 +95,16 @@ export const getTeamList = async (req, res) => {
     return res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find(); // Fetch all users from the database
+    console.log("Fetched users:", users); // Debugging: Log fetched users
+    res.status(200).json(users); // Send the users as a JSON response
+  } catch (error) {
+    console.error("Error fetching users:", error); // Debugging: Log errors
+    res.status(500).json({ message: "Error fetching users", error });
+  }
+};
 
 export const getNotificationsList = async (req, res) => {
   try {

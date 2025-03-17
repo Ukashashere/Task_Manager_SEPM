@@ -8,7 +8,7 @@ export const authApi = {
   login: async (credentials) => {
     try {
       const response = await axios.post(`${API_URL}/login`, credentials);
-      return response.data; // Return user data (token, info, etc.)
+      return response.data;
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
       return { success: false, message: error.response?.data?.message || "Login failed. Please try again." };
@@ -37,29 +37,19 @@ export const authApi = {
     }
   },
 
-  // Fetch user details (if required)
-  getUserDetails: async (token) => {
+  // Fetch all users (Admin Only)
+  getUsers: async (token) => {
     try {
-      const response = await axios.get(`${API_URL}/profile`, {
+      const response = await axios.get(`${API_URL}/all`, {  // Ensure backend has this route
         headers: { Authorization: `Bearer ${token}` }
       });
-      return response.data;
-    } catch (error) {
-      console.error("User details error:", error.response?.data || error.message);
-      return { success: false, message: "Failed to fetch user details." };
-    }
-  },
 
-  // Change Password API
-  changePassword: async (data, token) => {
-    try {
-      const response = await axios.post(`${API_URL}/change-password`, data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log("Users API Response:", response.data); // Debugging
+
       return response.data;
     } catch (error) {
-      console.error("Change password error:", error.response?.data || error.message);
-      return { success: false, message: error.response?.data?.message || "Password change failed. Try again." };
+      console.error("Fetch users error:", error.response?.data || error.message);
+      return { success: false, message: error.response?.data?.message || "Failed to fetch users." };
     }
   },
 };
