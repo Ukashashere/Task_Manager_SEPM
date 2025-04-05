@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ModalWrapper from "../ModalWrapper";
 import { Dialog } from "@headlessui/react";
 import Textbox from "../Textbox";
 import { useForm } from "react-hook-form";
-import UserList from "./UserList";
 import SelectList from "../SelectList";
-import { BiImages } from "react-icons/bi";
 import Button from "../Button";
 import { toast } from "react-hot-toast";
-import { createTask } from "../../utils/taskservice"; // Import the API service
+import { createTask } from "../../utils/taskservice";
+import { authApi } from "../../utils/authApi";
 
 const LISTS = ["TODO", "IN PROGRESS", "COMPLETED"];
 const PRIORIRY = ["HIGH", "MEDIUM", "NORMAL", "LOW"];
@@ -19,116 +18,155 @@ const AddTask = ({ open, setOpen }) => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  const [users, setUsers] = useState([]);
   const [team, setTeam] = useState([]);
   const [stage, setStage] = useState(LISTS[0]);
   const [priority, setPriority] = useState(PRIORIRY[2]);
-  const [assets, setAssets] = useState([]);
-  const [uploading, setUploading] = useState(false);
+  const token = localStorage.getItem("token");
 
-  const submitHandler = async (data) => {
-    try {
-      // Prepare task data
-      const taskData = {
-        title: data.title,
-        team: team, // Include the selected team
-        stage: stage.toLowerCase(), // Convert stage to lowercase
-        date: data.date,
-        priority: priority.toLowerCase(), // Convert priority to lowercase
-        assets: assets, // Include assets if any
-      };
-  
-      console.log("Sending task data:", taskData); // Debugging
-  
-      // Call the API to create the task
-      const response = await createTask(taskData);
-  
-      // Handle success
-      console.log("Task created successfully:", response);
-      toast.success("Task added successfully");
-      setOpen(false); // Close the modal
-  
-      // Reset the form fields (optional)
-      setTeam([]);
-      setStage(LISTS[0]);
-      setPriority(PRIORIRY[2]);
-      setAssets([]);
-    } catch (error) {
-      // Handle error
-      console.error("Error creating task:", error);
-  
-      // Display a more specific error message if available
-      if (error.message) {
-        toast.error(error.message);
-      } else {
-        toast.error("Failed to add task. Please try again.");
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await authApi.getUsers(token);
+        setUsers(data);
+      } catch (error) {
+        console.error("Error fetching users:", error.message);
+        toast.error("Failed to load users.");
       }
+    };
+
+    if (open) fetchUsers();
+  }, [open, token]);
+
+  const addToTeam = (e) => {
+    const userId = e.target.value;
+    if (userId && !team.includes(userId)) {
+      setTeam([...team, userId]);
     }
   };
 
-  const handleSelect = (e) => {
-    setAssets(e.target.files);
+  const removeFromTeam = (id) => {
+    setTeam(team.filter((uid) => uid !== id));
+  };
+
+  const submitHandler = async (data) => {
+    try {
+      const taskData = {
+        title: data.title,
+        team: team,
+        stage: stage.toLowerCase(),
+        date: data.date,
+        priority: priority.toLowerCase(),
+      };
+
+      const response = await createTask(taskData);
+      toast.success("Task added successfully");
+      setOpen(false);
+      setTeam([]);
+      setStage(LISTS[0]);
+      setPriority(PRIORIRY[2]);
+    } catch (error) {
+      console.error("Error creating task:", error);
+      toast.error(error.message || "Failed to add task. Please try again.");
+    }
   };
 
   return (
-    <>
-      <ModalWrapper open={open} setOpen={setOpen}>
-        <form onSubmit={handleSubmit(submitHandler)}>
-          <Dialog.Title as="h2" className="text-base font-bold leading-6 text-gray-900 mb-4">
-            ADD TASK
-          </Dialog.Title>
+    <ModalWrapper open={open} setOpen={setOpen}>
+      <form onSubmit={handleSubmit(submitHandler)}>
+        <Dialog.Title as="h2" className="text-base font-bold leading-6 text-gray-900 mb-4">
+          ADD TASK
+        </Dialog.Title>
 
-          <div className="mt-2 flex flex-col gap-6">
-            <Textbox
-              placeholder="Task Title"
-              type="text"
-              name="title"
-              label="Task Title"
-              className="w-full rounded"
-              register={register("title", { required: "Title is required" })}
-              error={errors.title?.message}
-            />
+        <div className="mt-2 flex flex-col gap-6">
+          <Textbox
+            placeholder="Task Title"
+            type="text"
+            name="title"
+            label="Task Title"
+            className="w-full rounded"
+            register={register("title", { required: "Title is required" })}
+            error={errors.title?.message}
+          />
 
-            <UserList setTeam={setTeam} team={team} />
+          {/* Multi-select with chip display */}
+          <div>
+            <label htmlFor="team" className="block text-sm font-medium text-gray-700 mb-1">
+              Assign To
+            </label>
+            <select
+              id="team"
+              value=""
+              onChange={addToTeam}
+              className="w-full border rounded-md p-2"
+            >
+              <option value="" disabled>Select users...</option>
+              {users
+                .filter((u) => !team.includes(u._id))
+                .map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.name}
+                  </option>
+                ))}
+            </select>
 
-            <div className="flex gap-4">
-              <SelectList label="Task Stage" lists={LISTS} selected={stage} setSelected={setStage} />
-
-              <Textbox
-                placeholder="Date"
-                type="date"
-                name="date"
-                label="Task Date"
-                className="w-full rounded"
-                register={register("date", { required: "Date is required!" })}
-                error={errors.date?.message}
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <SelectList label="Priority Level" lists={PRIORIRY} selected={priority} setSelected={setPriority} />
-
-              <div className="w-full flex items-center justify-center mt-4">
-                <label className="flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer my-4" htmlFor="imgUpload">
-                  <input type="file" className="hidden" id="imgUpload" onChange={handleSelect} accept=".jpg, .png, .jpeg" multiple />
-                  <BiImages />
-                  <span>Add Assets</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4">
-              {uploading ? (
-                <span className="text-sm py-2 text-red-500">Uploading assets</span>
-              ) : (
-                <Button label="Submit" type="submit" className="bg-blue-600 px-8 text-sm font-semibold text-white hover:bg-blue-700 sm:w-auto" />
-              )}
-
-              <Button type="button" className="bg-white px-5 text-sm font-semibold text-gray-900 sm:w-auto" onClick={() => setOpen(false)} label="Cancel" />
+            {/* Chips */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {team.map((id) => {
+                const user = users.find((u) => u._id === id);
+                return (
+                  <span
+                    key={id}
+                    className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center text-sm"
+                  >
+                    {user?.name}
+                    <button
+                      type="button"
+                      onClick={() => removeFromTeam(id)}
+                      className="ml-2 text-blue-700 hover:text-red-500 font-bold"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
             </div>
           </div>
-        </form>
-      </ModalWrapper>
-    </>
+
+          <div className="flex gap-4">
+            <SelectList label="Task Stage" lists={LISTS} selected={stage} setSelected={setStage} />
+            <Textbox
+              placeholder="Date"
+              type="date"
+              name="date"
+              label="Task Date"
+              className="w-full rounded"
+              register={register("date", { required: "Date is required!" })}
+              error={errors.date?.message}
+            />
+          </div>
+
+          <div className="flex gap-4">
+            <SelectList label="Priority Level" lists={PRIORIRY} selected={priority} setSelected={setPriority} />
+          </div>
+
+          <div className="bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4">
+            <Button
+              label="Submit"
+              type="submit"
+              className="bg-blue-600 px-8 text-sm font-semibold text-white hover:bg-blue-700 sm:w-auto"
+            />
+            <Button
+              type="button"
+              className="bg-white px-5 text-sm font-semibold text-gray-900 sm:w-auto"
+              onClick={() => setOpen(false)}
+              label="Cancel"
+            />
+          </div>
+        </div>
+      </form>
+    </ModalWrapper>
   );
 };
 

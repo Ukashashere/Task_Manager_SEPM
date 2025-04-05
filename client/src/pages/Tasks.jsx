@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaList } from "react-icons/fa";
 import { MdGridView } from "react-icons/md";
 import { useParams } from "react-router-dom";
@@ -9,9 +9,9 @@ import { IoMdAdd } from "react-icons/io";
 import Tabs from "../components/Tabs";
 import TaskTitle from "../components/TaskTitle";
 import BoardView from "../components/BoardView";
-import { tasks } from "../assets/data";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
+import { getTasks } from "../utils/taskservice";
 
 const TABS = [
   { title: "Board View", icon: <MdGridView /> },
@@ -26,12 +26,30 @@ const TASK_TYPE = {
 
 const Tasks = () => {
   const params = useParams();
+  const status = params?.status || "";
 
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState("");
 
-  const status = params?.status || "";
+  useEffect(() => {
+    const fetchTasks = async () => {
+      setLoading(true);
+      try {
+        const response = await getTasks();
+        setTasks(response.tasks);
+      } catch (err) {
+        console.error("Error loading tasks:", err.message);
+        setError("Failed to load tasks");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   return loading ? (
     <div className='py-10'>
@@ -41,7 +59,6 @@ const Tasks = () => {
     <div className='w-full'>
       <div className='flex items-center justify-between mb-4'>
         <Title title={status ? `${status} Tasks` : "Tasks"} />
-
         {!status && (
           <Button
             onClick={() => setOpen(true)}
@@ -53,14 +70,12 @@ const Tasks = () => {
       </div>
 
       <Tabs tabs={TABS} setSelected={setSelected}>
-        {!status && (
+        {/* ✅ Only show TaskTitle when in Board View */}
+        {!status && selected === 0 && (
           <div className='w-full flex justify-between gap-4 md:gap-x-12 py-4'>
             <TaskTitle label='To Do' className={TASK_TYPE.todo} />
-            <TaskTitle
-              label='In Progress'
-              className={TASK_TYPE["in progress"]}
-            />
-            <TaskTitle label='completed' className={TASK_TYPE.completed} />
+            <TaskTitle label='In Progress' className={TASK_TYPE["in progress"]} />
+            <TaskTitle label='Completed' className={TASK_TYPE.completed} />
           </div>
         )}
 

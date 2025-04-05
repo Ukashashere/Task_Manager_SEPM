@@ -14,7 +14,7 @@ import { summary } from "../assets/data";
 import clsx from "clsx";
 import { Chart } from "../components/Chart";
 import { PRIOTITYSTYELS, TASK_TYPE, getInitials } from "../utils";
-import { getTasks } from "../utils/taskservice"; // Import the API service
+import { getTasks } from "../utils/taskservice";
 
 const TaskTable = ({ tasks }) => {
   const ICONS = {
@@ -122,17 +122,16 @@ const UserTable = ({ users }) => {
 };
 
 const Dashboard = () => {
-  const [tasks, setTasks] = useState([]); // State to store tasks
-  const [loading, setLoading] = useState(false); // State to manage loading
-  const [error, setError] = useState(""); // State to manage errors
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch tasks from the backend
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         setLoading(true);
         const response = await getTasks();
-        setTasks(response.tasks); // Update the tasks state
+        setTasks(response.tasks);
       } catch (error) {
         setError(error.message || "Failed to fetch tasks.");
       } finally {
@@ -147,7 +146,7 @@ const Dashboard = () => {
     {
       _id: "1",
       label: "TOTAL TASK",
-      total: tasks.length || 0, // Use the actual number of tasks
+      total: tasks.length || 0,
       icon: <FaNewspaper />,
       bg: "bg-[#1d4ed8]",
     },
@@ -174,21 +173,18 @@ const Dashboard = () => {
     },
   ];
 
-  const Card = ({ label, count, bg, icon }) => {
-    return (
-      <div className="w-full h-32 bg-white p-5 shadow-md rounded-md flex items-center justify-between">
-        <div className="h-full flex flex-1 flex-col justify-between">
-          <p className="text-base text-gray-600 mt-2">{label}</p> {/* Pushes label down */}
-          <span className="text-2xl font-semibold mb-3">{count}</span> {/* Moves count up */}
-        </div>
-  
-        <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center text-white", bg)}>
-          {icon}
-        </div>
+  const Card = ({ label, count, bg, icon }) => (
+    <div className="w-full h-32 bg-white p-5 shadow-md rounded-md flex items-center justify-between">
+      <div className="h-full flex flex-1 flex-col justify-between">
+        <p className="text-base text-gray-600 mt-2">{label}</p>
+        <span className="text-2xl font-semibold mb-3">{count}</span>
       </div>
-    );
-  };
-  
+      <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center text-white", bg)}>
+        {icon}
+      </div>
+    </div>
+  );
+
   return (
     <div className="h-full py-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
@@ -203,7 +199,7 @@ const Dashboard = () => {
       </div>
 
       <div className="w-full flex flex-col md:flex-row gap-4 2xl:gap-10 py-8">
-        <TaskTable tasks={tasks} />
+        <TaskTable tasks={tasks.slice(0, 5)} /> {/* Latest 5 tasks */}
         <UserTable users={summary.users} />
       </div>
     </div>
