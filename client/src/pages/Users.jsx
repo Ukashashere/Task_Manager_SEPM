@@ -17,10 +17,8 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Get token from localStorage
-  const token = localStorage.getItem("token"); 
+  const token = localStorage.getItem("token");
 
-  // Fetch all users
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -28,12 +26,10 @@ const Users = () => {
         throw new Error("No authentication token found.");
       }
 
-      const data = await authApi.getUsers(token); // Correct function call
-
+      const data = await authApi.getUsers(token);
       if (!data || !Array.isArray(data)) {
         throw new Error("Invalid user data from server");
       }
-      console.log("Fetched users:", data);
       setUsers(data);
     } catch (error) {
       console.error("Failed to fetch users:", error.message);
@@ -82,11 +78,9 @@ const Users = () => {
           {user.name}
         </div>
       </td>
-
       <td className="p-2">{user.title || "N/A"}</td>
       <td className="p-2">{user.email || "N/A"}</td>
       <td className="p-2">{user.role || "User"}</td>
-
       <td>
         <button
           className={clsx(
@@ -97,7 +91,6 @@ const Users = () => {
           {user?.isActive ? "Active" : "Disabled"}
         </button>
       </td>
-
       <td className="p-2 flex gap-4 justify-end">
         <Button
           className="text-blue-600 hover:text-blue-500 font-semibold sm:px-0"
@@ -105,7 +98,6 @@ const Users = () => {
           type="button"
           onClick={() => editClick(user)}
         />
-
         <Button
           className="text-red-700 hover:text-red-500 font-semibold sm:px-0"
           label="Delete"
@@ -128,7 +120,10 @@ const Users = () => {
             label="Add New User"
             icon={<IoMdAdd className="text-lg" />}
             className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md 2xl:py-2.5"
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setSelected(null); // clear selected user before adding
+              setOpen(true);
+            }}
           />
         </div>
 
@@ -146,7 +141,13 @@ const Users = () => {
         </div>
       </div>
 
-      <AddUser open={open} setOpen={setOpen} userData={selected} />
+      <AddUser
+        open={open}
+        setOpen={setOpen}
+        userData={selected}
+        refetch={fetchUsers} // ✅ This is the change that refreshes users after add/edit
+      />
+
       <ConfirmationDialog open={openDialog} setOpen={setOpenDialog} />
       <UserAction open={openAction} setOpen={setOpenAction} />
     </>

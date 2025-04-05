@@ -225,3 +225,30 @@ export const deleteUserProfile = async (req, res) => {
     return res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
+// New controller to edit any user's details by ADMIN
+export const editUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params; // from the URL
+    const { name, email, role, title } = req.body;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.role = role || user.role;
+    user.title = title || user.title;
+
+    const updatedUser = await user.save();
+    updatedUser.password = undefined;
+
+    res.status(200).json({ status: true, message: "User updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    return res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+

@@ -11,7 +11,8 @@ import {
   markNotificationRead,
   registerUser,
   updateUserProfile,
-  getUsers, // Add this new controller function
+  getUsers,
+  editUserProfile, // ✅ Import new controller
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -30,13 +31,12 @@ router.put("/profile", protectRoute, updateUserProfile);
 router.put("/read-noti", protectRoute, markNotificationRead);
 router.put("/change-password", protectRoute, changeUserPassword);
 
-// Route for fetching all users (added this new route)
-router.get("/all", protectRoute, getUsers); // Fetch all users
+// Route for fetching all users
+router.get("/all", protectRoute, getUsers);
 
-// Admin-only routes for activating or deleting user profiles
-router
-  .route("/:id")
-  .put(protectRoute, isAdminRoute, activateUserProfile)
-  .delete(protectRoute, isAdminRoute, deleteUserProfile);
+// Admin-only routes
+router.put("/:id", protectRoute, editUserProfile); // ✅ Update user by ID
+router.patch("/:id", protectRoute, isAdminRoute, activateUserProfile); // ✅ Activate/deactivate user
+router.delete("/:id", protectRoute, isAdminRoute, deleteUserProfile); // ✅ Delete user
 
 export default router;
