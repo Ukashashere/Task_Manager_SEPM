@@ -15,6 +15,7 @@ import clsx from "clsx";
 import { Chart } from "../components/Chart";
 import { PRIOTITYSTYELS, TASK_TYPE, getInitials } from "../utils";
 import { getTasks } from "../utils/taskservice";
+import { useSelector } from "react-redux";
 
 const TaskTable = ({ tasks }) => {
   const ICONS = {
@@ -42,7 +43,6 @@ const TaskTable = ({ tasks }) => {
           <p className="text-base text-black">{task.title}</p>
         </div>
       </td>
-
       <td className="py-2">
         <div className="flex gap-1 items-center">
           <span className={clsx("text-lg", PRIOTITYSTYELS[task.priority])}>
@@ -51,9 +51,10 @@ const TaskTable = ({ tasks }) => {
           <span className="capitalize">{task.priority}</span>
         </div>
       </td>
-
       <td className="py-2 hidden md:block">
-        <span className="text-base text-gray-600">{moment(task?.date).fromNow()}</span>
+        <span className="text-base text-gray-600">
+          {moment(task?.date).fromNow()}
+        </span>
       </td>
     </tr>
   );
@@ -90,16 +91,19 @@ const UserTable = ({ users }) => {
           <div className="w-9 h-9 rounded-full text-white flex items-center justify-center text-sm bg-violet-700">
             <span className="text-center">{getInitials(user?.name)}</span>
           </div>
-
           <div>
             <p>{user.name}</p>
             <span className="text-xs text-black">{user?.role}</span>
           </div>
         </div>
       </td>
-
       <td>
-        <p className={clsx("w-fit px-3 py-1 rounded-full text-sm", user?.isActive ? "bg-blue-200" : "bg-yellow-100")}>
+        <p
+          className={clsx(
+            "w-fit px-3 py-1 rounded-full text-sm",
+            user?.isActive ? "bg-blue-200" : "bg-yellow-100"
+          )}
+        >
           {user?.isActive ? "Active" : "Disabled"}
         </p>
       </td>
@@ -125,22 +129,24 @@ const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         setLoading(true);
-        const response = await getTasks();
-        setTasks(response.tasks);
+        const response = await getTasks(user?.token);
+        setTasks(response.tasks || []);
       } catch (error) {
+        console.error("Error fetching tasks:", error);
         setError(error.message || "Failed to fetch tasks.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTasks();
-  }, []);
+    if (user?.token) fetchTasks();
+  }, [user]);
 
   const stats = [
     {
@@ -179,11 +185,19 @@ const Dashboard = () => {
         <p className="text-base text-gray-600 mt-2">{label}</p>
         <span className="text-2xl font-semibold mb-3">{count}</span>
       </div>
-      <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center text-white", bg)}>
+      <div
+        className={clsx(
+          "w-10 h-10 rounded-full flex items-center justify-center text-white",
+          bg
+        )}
+      >
         {icon}
       </div>
     </div>
   );
+
+  if (loading) return <div className="p-8">Loading dashboard...</div>;
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
 
   return (
     <div className="h-full py-4">
@@ -199,7 +213,7 @@ const Dashboard = () => {
       </div>
 
       <div className="w-full flex flex-col md:flex-row gap-4 2xl:gap-10 py-8">
-        <TaskTable tasks={tasks.slice(0, 5)} /> {/* Latest 5 tasks */}
+        <TaskTable tasks={tasks.slice(0, 5)} />
         <UserTable users={summary.users} />
       </div>
     </div>
