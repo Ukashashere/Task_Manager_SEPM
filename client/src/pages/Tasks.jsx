@@ -35,20 +35,20 @@ const Tasks = () => {
   const [error, setError] = useState("");
   const [editingTask, setEditingTask] = useState(null);
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const response = await getTasks();
-        setTasks(response.tasks);
-      } catch (err) {
-        console.error("Error loading tasks:", err.message);
-        setError("Failed to load tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchTasks = async () => {
+    setLoading(true);
+    try {
+      const response = await getTasks();
+      setTasks(response.tasks);
+    } catch (err) {
+      console.error("Error loading tasks:", err.message);
+      setError("Failed to load tasks");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchTasks();
   }, []);
 
@@ -68,7 +68,7 @@ const Tasks = () => {
         {!status && (
           <Button
             onClick={() => {
-              setEditingTask(null); // ✅ Clear editing task before opening modal
+              setEditingTask(null);
               setOpen(true);
             }}
             label='Create Task'
@@ -91,7 +91,11 @@ const Tasks = () => {
           <BoardView tasks={tasks} />
         ) : (
           <div className='w-full'>
-            <Table tasks={tasks} onEdit={handleEditTask} />
+            <Table
+              tasks={tasks}
+              onEdit={handleEditTask}
+              refetch={fetchTasks}
+            />
           </div>
         )}
       </Tabs>
@@ -100,7 +104,9 @@ const Tasks = () => {
         open={open}
         setOpen={setOpen}
         task={editingTask}
+        setTask={setEditingTask}
         key={editingTask ? editingTask._id : "create-task"}
+        refetch={fetchTasks}
       />
     </div>
   );

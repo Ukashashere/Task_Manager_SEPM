@@ -10,6 +10,7 @@ import clsx from "clsx";
 import UserInfo from "../UserInfo";
 import Button from "../Button";
 import ConfirmatioDialog from "../Dialogs";
+import axios from "axios";
 
 const ICONS = {
   high: <MdKeyboardDoubleArrowUp />,
@@ -17,7 +18,7 @@ const ICONS = {
   low: <MdKeyboardArrowDown />,
 };
 
-const Table = ({ tasks, onEdit }) => {
+const Table = ({ tasks, onEdit, refetch }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selected, setSelected] = useState(null);
 
@@ -28,9 +29,30 @@ const Table = ({ tasks, onEdit }) => {
     setOpenDialog(true);
   };
 
-  const deleteHandler = () => {
-    toast.success("Task deleted");
-    setOpenDialog(false);
+  const deleteHandler = async () => {
+    try {
+      await axios.put(
+        `http://localhost:8800/api/tasks/trash/${selected}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      toast.success("Task moved to trash successfully");
+      setOpenDialog(false);
+      setSelected(null);
+
+      // 🔁 Automatically refresh the task list
+      if (refetch) {
+        refetch();
+      }
+    } catch (error) {
+      toast.error("Failed to move task to trash");
+      console.error(error);
+    }
   };
 
   const TableHeader = () => (
