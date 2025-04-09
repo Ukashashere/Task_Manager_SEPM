@@ -1,3 +1,4 @@
+// (unchanged import section)
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +7,7 @@ import Button from "../components/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../redux/slices/authSlice";
 import { authApi } from "../utils/authApi";
-import { FiMail, FiLock, FiUser } from "react-icons/fi"; // Import FiUser for the Full Name field
+import { FiMail, FiLock, FiUser } from "react-icons/fi";
 
 const Login = () => {
   const { user } = useSelector((state) => state.auth);
@@ -40,6 +41,7 @@ const Login = () => {
 
           if (response.token) {
             localStorage.setItem("token", response.token);
+            localStorage.setItem("role", response.role); // ✅ Store role in localStorage
             console.log("Token stored in localStorage:", response.token);
           } else {
             console.error("Token not found in the response");
@@ -119,7 +121,6 @@ const Login = () => {
             </div>
 
             <div className="flex flex-col gap-y-5">
-              {/* Show Full Name field only for Sign Up */}
               {!isLogin && (
                 <Textbox
                   placeholder="Full Name"
@@ -131,7 +132,7 @@ const Login = () => {
                     required: "Full Name is required!",
                   })}
                   error={errors.name ? errors.name.message : ""}
-                  icon={<FiUser className="text-gray-400" />} // Add person icon
+                  icon={<FiUser className="text-gray-400" />}
                 />
               )}
 
@@ -145,7 +146,7 @@ const Login = () => {
                   required: "Email Address is required!",
                 })}
                 error={errors.email ? errors.email.message : ""}
-                icon={<FiMail className="text-gray-400" />} // Add email icon
+                icon={<FiMail className="text-gray-400" />}
               />
 
               <Textbox
@@ -158,7 +159,7 @@ const Login = () => {
                   required: "Password is required!",
                 })}
                 error={errors.password ? errors.password.message : ""}
-                icon={<FiLock className="text-gray-400" />} // Add password icon
+                icon={<FiLock className="text-gray-400" />}
               />
 
               {isLogin && (
@@ -175,18 +176,15 @@ const Login = () => {
               />
             </div>
 
-            {/* Loading Animation */}
             {loading && (
               <div className="flex justify-center mt-3">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               </div>
             )}
 
-            {/* Display error/success message */}
             {errorMessage && <p className="text-red-600 text-sm text-center mt-2">{errorMessage}</p>}
             {successMessage && <p className="text-green-600 text-sm text-center mt-2">{successMessage}</p>}
 
-            {/* Toggle Login / Sign Up */}
             <p className="text-center mt-4">
               {isLogin ? "Don't have an account?" : "Already have an account?"}
               <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-blue-600 ml-1">

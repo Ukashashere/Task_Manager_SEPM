@@ -37,6 +37,8 @@ router.get("/all", protectRoute, getUsers);
 // Admin-only routes
 router.put("/:id", protectRoute, editUserProfile); // ✅ Update user by ID
 router.patch("/:id", protectRoute, isAdminRoute, activateUserProfile); // ✅ Activate/deactivate user
-router.delete("/:id", protectRoute, isAdminRoute, deleteUserProfile); // ✅ Delete user
+router.delete("/:id", protectRoute, deleteUserProfile); // ✅ Delete user
+
+
 
 export default router;

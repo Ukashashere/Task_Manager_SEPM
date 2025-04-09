@@ -52,4 +52,24 @@ export const authApi = {
       return { success: false, message: error.response?.data?.message || "Failed to fetch users." };
     }
   },
+
+  changePassword: async (passwords, token) => {
+    const res = await fetch(`${API_URL}/change-password`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(passwords),
+    });
+  
+    const data = await res.json();
+  
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to change password");
+    }
+  
+    return data;
+  },
+  
 };

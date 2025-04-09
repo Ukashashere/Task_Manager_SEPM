@@ -169,8 +169,8 @@ export const markNotificationRead = async (req, res) => {
 
 export const changeUserPassword = async (req, res) => {
   try {
-    const { userId } = req.user;
-    const { currentPassword, newPassword } = req.body;
+    const userId = req.user._id;
+    const { oldPassword, newPassword } = req.body;
 
     const user = await User.findById(userId);
 
@@ -178,9 +178,9 @@ export const changeUserPassword = async (req, res) => {
       return res.status(404).json({ status: false, message: "User not found" });
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ status: false, message: "Incorrect current password" });
+      return res.status(400).json({ status: false, message: "Incorrect old password" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -189,11 +189,10 @@ export const changeUserPassword = async (req, res) => {
     await user.save();
     res.status(200).json({ status: true, message: "Password changed successfully" });
   } catch (error) {
-    console.error("Error changing password:", error);
+    console.error("❌ Error changing password:", error);
     return res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
-
 export const activateUserProfile = async (req, res) => {
   try {
     const { id } = req.params;

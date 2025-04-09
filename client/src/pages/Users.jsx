@@ -16,6 +16,7 @@ const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [confirmMsg, setConfirmMsg] = useState(null);
 
   const token = localStorage.getItem("token");
 
@@ -43,14 +44,30 @@ const Users = () => {
     fetchUsers();
   }, []);
 
+  // 🗑️ Called when user clicks delete button
   const deleteClick = (id) => {
+    const user = users.find((u) => u._id === id);
     setSelected(id);
+    setConfirmMsg(`Are you sure you want to delete ${user?.name || "this user"}?`);
     setOpenDialog(true);
   };
 
+  // ✏️ Called when user clicks edit button
   const editClick = (el) => {
     setSelected(el);
     setOpen(true);
+  };
+
+  // ✅ Deletion logic passed to ConfirmationDialog
+  const handleDelete = async () => {
+    try {
+      await authApi.deleteUser(selected, token); // assuming deleteUser takes (id, token)
+      fetchUsers();
+    } catch (error) {
+      console.error("Failed to delete user:", error.message);
+    } finally {
+      setSelected(null);
+    }
   };
 
   const TableHeader = () => (
@@ -145,11 +162,20 @@ const Users = () => {
         open={open}
         setOpen={setOpen}
         userData={selected}
-        refetch={fetchUsers} // ✅ This is the change that refreshes users after add/edit
+        refetch={fetchUsers}
       />
 
-      <ConfirmationDialog open={openDialog} setOpen={setOpenDialog} />
-      <UserAction open={openAction} setOpen={setOpenAction} />
+      <ConfirmationDialog
+        open={openDialog}
+        setOpen={setOpenDialog}
+        msg={confirmMsg}
+        onClick={handleDelete}
+      />
+
+      <UserAction
+        open={openAction}
+        setOpen={setOpenAction}
+      />
     </>
   );
 };

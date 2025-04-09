@@ -9,6 +9,7 @@ import { Menu, Transition } from "@headlessui/react";
 import AddTask from "./AddTask";
 import AddSubTask from "./AddSubTask";
 import ConfirmatioDialog from "../Dialogs";
+import { toast } from "sonner";
 
 const TaskDialog = ({ task }) => {
   const [open, setOpen] = useState(false);
@@ -17,107 +18,85 @@ const TaskDialog = ({ task }) => {
 
   const navigate = useNavigate();
 
-  const duplicateHandler = () => {};
-  const deleteClicks = () => {};
-  const deleteHandler = () => {};
+  const duplicateHandler = () => {
+    toast.success("Duplicated Task");
+  };
+
+  const deleteClicks = () => {
+    setOpenDialog(true);
+  };
+
+  const deleteHandler = () => {
+    toast.success("Task deleted");
+    setOpenDialog(false);
+  };
 
   const items = [
     {
-      label: "Open Task",
-      icon: <AiTwotoneFolderOpen className='mr-2 h-5 w-5' aria-hidden='true' />,
-      onClick: () => navigate(`/task/${task._id}`),
-    },
-    {
-      label: "Edit",
-      icon: <MdOutlineEdit className='mr-2 h-5 w-5' aria-hidden='true' />,
+      label: "Edit Task",
+      icon: <MdOutlineEdit />,
       onClick: () => setOpenEdit(true),
     },
     {
-      label: "Add Sub-Task",
-      icon: <MdAdd className='mr-2 h-5 w-5' aria-hidden='true' />,
-      onClick: () => setOpen(true),
+      label: "Duplicate Task",
+      icon: <HiDuplicate />,
+      onClick: duplicateHandler,
     },
     {
-      label: "Duplicate",
-      icon: <HiDuplicate className='mr-2 h-5 w-5' aria-hidden='true' />,
-      onClick: () => duplicateHanlder(),
+      label: "Delete Task",
+      icon: <RiDeleteBin6Line />,
+      onClick: deleteClicks,
     },
   ];
 
   return (
-    <>
-      <div>
-        <Menu as='div' className='relative inline-block text-left'>
-          <Menu.Button className='inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium text-gray-600 '>
-            <BsThreeDots />
+    <div className='relative'>
+      <Menu as='div' className='relative inline-block text-left'>
+        <div>
+          <Menu.Button className='text-gray-500 hover:text-black focus:outline-none'>
+            <BsThreeDots size={20} />
           </Menu.Button>
+        </div>
 
-          <Transition
-            as={Fragment}
-            enter='transition ease-out duration-100'
-            enterFrom='transform opacity-0 scale-95'
-            enterTo='transform opacity-100 scale-100'
-            leave='transition ease-in duration-75'
-            leaveFrom='transform opacity-100 scale-100'
-            leaveTo='transform opacity-0 scale-95'
-          >
-            <Menu.Items className='absolute p-4 right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none'>
-              <div className='px-1 py-1 space-y-2'>
-                {items.map((el) => (
-                  <Menu.Item key={el.label}>
-                    {({ active }) => (
-                      <button
-                        onClick={el?.onClick}
-                        className={`${
-                          active ? "bg-blue-500 text-white" : "text-gray-900"
-                        } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                      >
-                        {el.icon}
-                        {el.label}
-                      </button>
-                    )}
-                  </Menu.Item>
-                ))}
-              </div>
-
-              <div className='px-1 py-1'>
+        <Transition
+          as={Fragment}
+          enter='transition ease-out duration-100'
+          enterFrom='transform opacity-0 scale-95'
+          enterTo='transform opacity-100 scale-100'
+          leave='transition ease-in duration-75'
+          leaveFrom='transform opacity-100 scale-100'
+          leaveTo='transform opacity-0 scale-95'
+        >
+          <Menu.Items className='absolute right-0 mt-2 w-48 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg outline-none'>
+            {items.map((item, index) => (
+              <div className='px-1 py-1' key={index}>
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      onClick={() => deleteClicks()}
+                      onClick={item.onClick}
                       className={`${
-                        active ? "bg-blue-500 text-white" : "text-red-900"
+                        active ? "bg-gray-100" : "text-gray-900"
                       } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                     >
-                      <RiDeleteBin6Line
-                        className='mr-2 h-5 w-5 text-red-400'
-                        aria-hidden='true'
-                      />
-                      Delete
+                      {item.icon}
+                      <span className='ml-2'>{item.label}</span>
                     </button>
                   )}
                 </Menu.Item>
               </div>
-            </Menu.Items>
-          </Transition>
-        </Menu>
-      </div>
+            ))}
+          </Menu.Items>
+        </Transition>
+      </Menu>
 
-      <AddTask
-        open={openEdit}
-        setOpen={setOpenEdit}
-        task={task}
-        key={new Date().getTime()}
-      />
-
+      <AddTask open={openEdit} setOpen={setOpenEdit} task={task} />
       <AddSubTask open={open} setOpen={setOpen} />
-
       <ConfirmatioDialog
         open={openDialog}
         setOpen={setOpenDialog}
         onClick={deleteHandler}
       />
-    </>
+    </div>
   );
 };
 

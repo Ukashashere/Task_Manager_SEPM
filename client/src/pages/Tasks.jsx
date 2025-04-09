@@ -33,6 +33,7 @@ const Tasks = () => {
   const [loading, setLoading] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState("");
+  const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -51,6 +52,11 @@ const Tasks = () => {
     fetchTasks();
   }, []);
 
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setOpen(true);
+  };
+
   return loading ? (
     <div className='py-10'>
       <Loading />
@@ -61,7 +67,10 @@ const Tasks = () => {
         <Title title={status ? `${status} Tasks` : "Tasks"} />
         {!status && (
           <Button
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setEditingTask(null); // ✅ Clear editing task before opening modal
+              setOpen(true);
+            }}
             label='Create Task'
             icon={<IoMdAdd className='text-lg' />}
             className='flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5'
@@ -70,7 +79,6 @@ const Tasks = () => {
       </div>
 
       <Tabs tabs={TABS} setSelected={setSelected}>
-        {/* ✅ Only show TaskTitle when in Board View */}
         {!status && selected === 0 && (
           <div className='w-full flex justify-between gap-4 md:gap-x-12 py-4'>
             <TaskTitle label='To Do' className={TASK_TYPE.todo} />
@@ -83,12 +91,17 @@ const Tasks = () => {
           <BoardView tasks={tasks} />
         ) : (
           <div className='w-full'>
-            <Table tasks={tasks} />
+            <Table tasks={tasks} onEdit={handleEditTask} />
           </div>
         )}
       </Tabs>
 
-      <AddTask open={open} setOpen={setOpen} />
+      <AddTask
+        open={open}
+        setOpen={setOpen}
+        task={editingTask}
+        key={editingTask ? editingTask._id : "create-task"}
+      />
     </div>
   );
 };
