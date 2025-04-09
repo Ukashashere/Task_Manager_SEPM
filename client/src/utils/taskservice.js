@@ -2,53 +2,73 @@ import axios from "axios";
 
 const API_URL = "http://localhost:8800/api/tasks";
 
-// Function to create a task
+const getToken = () => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No token found. Please log in again.");
+  return token;
+};
+
 export const createTask = async (taskData) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No token found. Please log in again.");
-
-    const response = await axios.post(`${API_URL}/create`, taskData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
-  }
+  const token = getToken();
+  const response = await axios.post(`${API_URL}/create`, taskData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
 };
 
-// Function to update a task
 export const updateTask = async (taskId, updatedData) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No token found. Please log in again.");
-
-    const response = await axios.put(`${API_URL}/${taskId}`, updatedData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
-  }
+  const token = getToken();
+  const response = await axios.put(`${API_URL}/${taskId}`, updatedData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
 };
 
-// Function to fetch all tasks
 export const getTasks = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No token found. Please log in again.");
+  const token = getToken();
+  const response = await axios.get(`${API_URL}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
 
-    const response = await axios.get(`${API_URL}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
-  }
+// ✅ Fetch trashed tasks (fixed!)
+export const getTrashedTasks = async () => {
+  const token = getToken();
+  const response = await axios.get(`${API_URL}/trash`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data.tasks; // ✅ Fix: return only the tasks array
+};
+
+export const restoreTask = async (taskId) => {
+  const token = getToken();
+  const response = await axios.put(`${API_URL}/restore/${taskId}`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const permanentDeleteTask = async (taskId) => {
+  const token = getToken();
+  const response = await axios.delete(`${API_URL}/${taskId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const restoreAllTasks = async () => {
+  const token = getToken();
+  const response = await axios.put(`${API_URL}/restore-all`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const permanentDeleteAllTasks = async () => {
+  const token = getToken();
+  const response = await axios.delete(`${API_URL}/delete-all`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
 };

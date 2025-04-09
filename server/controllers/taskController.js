@@ -2,6 +2,7 @@ import Notice from "../models/notification.js";
 import Task from "../models/task.js";
 import User from "../models/user.js";
 
+// ✅ Create a task
 export const createTask = async (req, res) => {
   try {
     const { userId } = req.user;
@@ -21,9 +22,8 @@ export const createTask = async (req, res) => {
       },
     });
 
-    // ✅ Create notifications for each team member with correct field
     const notifications = team.map(user => ({
-      team: user, // ✅ FIXED
+      team: user,
       text: `You’ve been assigned a new task: "${title}".`,
       task: task._id,
     }));
@@ -37,10 +37,10 @@ export const createTask = async (req, res) => {
   }
 };
 
+// ✅ Duplicate a task
 export const duplicateTask = async (req, res) => {
   try {
     const { id } = req.params;
-
     const task = await Task.findById(id);
 
     const newTask = await Task.create({
@@ -56,12 +56,12 @@ export const duplicateTask = async (req, res) => {
 
     await newTask.save();
 
-    const text = `New task has been assigned to you${task.team.length > 1 ? ` and ${task.team.length - 1} others.` : "."} 
-    Priority: ${task.priority}. Date: ${task.date.toDateString()}`;
+    const text = `New task has been assigned to you${
+      task.team.length > 1 ? ` and ${task.team.length - 1} others.` : "."
+    } Priority: ${task.priority}. Date: ${task.date.toDateString()}`;
 
-    // ✅ Create notifications with correct field
     const notifications = task.team.map(user => ({
-      team: user, // ✅ FIXED
+      team: user,
       text,
       task: newTask._id,
     }));
@@ -75,7 +75,7 @@ export const duplicateTask = async (req, res) => {
   }
 };
 
-// No changes needed below this point
+// ✅ Add task activity
 export const postTaskActivity = async (req, res) => {
   try {
     const { id } = req.params;
@@ -95,6 +95,7 @@ export const postTaskActivity = async (req, res) => {
   }
 };
 
+// ✅ Dashboard stats
 export const dashboardStatistics = async (req, res) => {
   try {
     const { userId, isAdmin } = req.user;
@@ -139,11 +140,18 @@ export const dashboardStatistics = async (req, res) => {
   }
 };
 
+// ✅ Get all tasks (filters out trashed by default)
 export const getTasks = async (req, res) => {
   try {
     const { stage, isTrashed } = req.query;
-    const query = { isTrashed: isTrashed ? true : false };
+
+    const query = {};
     if (stage) query.stage = stage;
+    if (isTrashed !== undefined) {
+      query.isTrashed = isTrashed === "true";
+    } else {
+      query.isTrashed = false;
+    }
 
     const tasks = await Task.find(query).populate("team", "name title email").sort({ _id: -1 });
 
@@ -154,6 +162,7 @@ export const getTasks = async (req, res) => {
   }
 };
 
+// ✅ Get single task
 export const getTask = async (req, res) => {
   try {
     const { id } = req.params;
@@ -168,6 +177,7 @@ export const getTask = async (req, res) => {
   }
 };
 
+// ✅ Create subtask
 export const createSubTask = async (req, res) => {
   try {
     const { title, tag, date } = req.body;
@@ -187,6 +197,7 @@ export const createSubTask = async (req, res) => {
   }
 };
 
+// ✅ Update task
 export const updateTask = async (req, res) => {
   try {
     const { id } = req.params;
@@ -210,6 +221,7 @@ export const updateTask = async (req, res) => {
   }
 };
 
+// ✅ Trash a task
 export const trashTask = async (req, res) => {
   try {
     const { id } = req.params;
@@ -226,6 +238,7 @@ export const trashTask = async (req, res) => {
   }
 };
 
+// ✅ Delete or Restore task(s)
 export const deleteRestoreTask = async (req, res) => {
   try {
     const { id } = req.params;
@@ -249,3 +262,15 @@ export const deleteRestoreTask = async (req, res) => {
     return res.status(400).json({ status: false, message: error.message });
   }
 };
+
+// GET /api/tasks/trash
+export const getTrashedTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({ isTrashed: true }).populate("team", "name title email");
+    res.status(200).json({ status: true, tasks });
+  } catch (error) {
+    console.error("Error fetching trashed tasks:", error.message);
+    res.status(500).json({ status: false, message: "Failed to fetch trashed tasks." });
+  }
+};
+
