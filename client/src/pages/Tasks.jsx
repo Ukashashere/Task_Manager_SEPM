@@ -11,7 +11,7 @@ import TaskTitle from "../components/TaskTitle";
 import BoardView from "../components/BoardView";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
-import { getTasks } from "../utils/taskservice";
+import { getTasks, updateTask } from "../utils/taskservice";
 
 const TABS = [
   { title: "Board View", icon: <MdGridView /> },
@@ -57,6 +57,19 @@ const Tasks = () => {
     setOpen(true);
   };
 
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      await updateTask(taskId, { stage: newStatus });
+      setTasks((prev) =>
+        prev.map((task) =>
+          task._id === taskId ? { ...task, stage: newStatus } : task
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update task status:", err.message);
+    }
+  };
+
   return loading ? (
     <div className='py-10'>
       <Loading />
@@ -88,7 +101,11 @@ const Tasks = () => {
         )}
 
         {selected !== 1 ? (
-          <BoardView tasks={tasks} />
+          <BoardView
+            tasks={tasks}
+            onEdit={handleEditTask}
+            onStatusChange={handleStatusChange}
+          />
         ) : (
           <div className='w-full'>
             <Table
