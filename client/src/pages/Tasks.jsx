@@ -60,11 +60,7 @@ const Tasks = () => {
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       await updateTask(taskId, { stage: newStatus });
-      setTasks((prev) =>
-        prev.map((task) =>
-          task._id === taskId ? { ...task, stage: newStatus } : task
-        )
-      );
+      fetchTasks();
     } catch (err) {
       console.error("Failed to update task status:", err.message);
     }
