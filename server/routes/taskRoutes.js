@@ -11,6 +11,7 @@ import {
   postTaskActivity,
   trashTask,
   updateTask,
+  restoreAllTasks,  // Import the restoreAllTasks function
 } from "../controllers/taskController.js";
 import { isAdminRoute, protectRoute } from "../middlewares/authMiddlewave.js";
 
@@ -27,8 +28,8 @@ router.get("/:id", protectRoute, getTask);
 
 router.put("/create-subtask/:id", protectRoute, isAdminRoute, createSubTask);
 router.put("/trash/:id", protectRoute, trashTask); // For trashing tasks
-router.put("/restore/:id", protectRoute,  deleteRestoreTask); // ✅ new route for restoring
-router.put("/restore-all", protectRoute,  deleteRestoreTask);  // ✅ restore all
+router.put("/restore/:id", protectRoute, deleteRestoreTask); // Route for restoring a single task
+router.put("/restore-all", protectRoute, restoreAllTasks);  // ✅ new route for restoring all tasks
 router.put("/:id", protectRoute, updateTask);
 
 // DELETE /delete-restore/:id

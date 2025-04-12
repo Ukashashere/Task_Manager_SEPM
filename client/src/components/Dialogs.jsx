@@ -20,6 +20,20 @@ export default function ConfirmationDialog({
     setOpen(false);
   };
 
+  // Determine the action label based on type
+  const getActionLabel = () => {
+    switch (type) {
+      case "restore":
+        return "Restore";
+      case "restoreAll":
+        return "Restore All";
+      case "deleteAll":
+        return "Delete All";
+      default:
+        return "Delete";
+    }
+  };
+
   return (
     <ModalWrapper open={open} setOpen={closeDialog}>
       <div className='py-4 w-full flex flex-col gap-4 items-center justify-center'>
@@ -53,7 +67,7 @@ export default function ConfirmationDialog({
               onClick(); // call the delete or restore handler
               closeDialog(); // close the dialog after action
             }}
-            label={type === "restore" ? "Restore" : "Delete"}
+            label={getActionLabel()}
           />
 
           <Button

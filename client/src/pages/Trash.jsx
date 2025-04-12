@@ -82,7 +82,7 @@ const Trash = () => {
         await permanentDeleteTask(selected);
         toast.success("Task permanently deleted");
       } else if (type === "restoreAll") {
-        await restoreAllTasks();
+        await restoreAllTasks(); // Make sure this function is called correctly
         toast.success("All tasks restored");
       } else if (type === "deleteAll") {
         await permanentDeleteAllTasks();
@@ -93,7 +93,12 @@ const Trash = () => {
       setOpenDialog(false);
     } catch (error) {
       console.error("Action failed", error);
-      toast.error("Operation failed");
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+        toast.error(error.response.data.message || "Operation failed");
+      } else {
+        toast.error("Operation failed: " + error.message);
+      }
     }
   };
 

@@ -68,10 +68,15 @@ export const permanentDeleteTask = async (taskId) => {
 // ✅ Restore all tasks — changed from PUT to DELETE
 export const restoreAllTasks = async () => {
   const token = getToken();
-  const response = await axios.delete(`${API_URL}/delete-restore?actionType=restoreAll`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return response.data;
+  try {
+    const response = await axios.put(`${API_URL}/restore-all`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error restoring all tasks:", error);
+    throw error;
+  }
 };
 
 // ✅ Permanently delete all tasks

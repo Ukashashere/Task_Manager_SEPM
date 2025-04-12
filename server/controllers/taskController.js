@@ -58,8 +58,7 @@ export const duplicateTask = async (req, res) => {
     await newTask.save();
 
     const text = `New task has been assigned to you${
-      task.team.length > 1 ? ` and ${task.team.length - 1} others.` : "."
-    } Priority: ${task.priority}. Date: ${task.date.toDateString()}`;
+      task.team.length > 1 ? ` and ${task.team.length - 1} others.` : "."} Priority: ${task.priority}. Date: ${task.date.toDateString()}`;
 
     const notifications = task.team.map(user => ({
       team: user,
@@ -233,7 +232,6 @@ export const trashTask = async (req, res) => {
 };
 
 // ✅ Delete or Restore task(s)
-// ✅ Delete or Restore task(s)
 export const deleteRestoreTask = async (req, res) => {
   const { id } = req.params;
   const rawAction = req.query.actionType;
@@ -292,10 +290,25 @@ export const deleteRestoreTask = async (req, res) => {
   }
 };
 
+// ✅ Restore all tasks
+export const restoreAllTasks = async (req, res) => {
+  try {
+    // Update all trashed tasks to restore them
+    const updatedTasks = await Task.updateMany(
+      { isTrashed: true },  // Condition to find trashed tasks
+      { $set: { isTrashed: false } }  // Update the isTrashed field to false (restore)
+    );
 
+    if (updatedTasks.nModified === 0) {
+      return res.status(404).json({ status: false, message: "No tasks found to restore." });
+    }
 
-
-
+    res.status(200).json({ status: true, message: "All tasks restored successfully." });
+  } catch (error) {
+    console.error("❌ Error in restoreAllTasks:", error);
+    return res.status(500).json({ status: false, message: "Server error." });
+  }
+};
 
 // ✅ Get trashed tasks
 export const getTrashedTasks = async (req, res) => {
