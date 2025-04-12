@@ -32,42 +32,52 @@ export const getTasks = async () => {
   return response.data;
 };
 
-// ✅ Fetch trashed tasks (fixed!)
 export const getTrashedTasks = async () => {
   const token = getToken();
   const response = await axios.get(`${API_URL}/trash`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return response.data.tasks; // ✅ Fix: return only the tasks array
+  return response.data.tasks;
 };
 
+// ✅ Restore single task
 export const restoreTask = async (taskId) => {
   const token = getToken();
-  const response = await axios.put(`${API_URL}/restore/${taskId}`, {}, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await axios.put(
+    `${API_URL}/restore/${taskId}?actionType=restore`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   return response.data;
 };
 
+// ✅ Permanently delete a task
 export const permanentDeleteTask = async (taskId) => {
   const token = getToken();
-  const response = await axios.delete(`${API_URL}/${taskId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await axios.delete(
+    `${API_URL}/delete-restore/${taskId}?actionType=delete`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   return response.data;
 };
 
+// ✅ Restore all tasks — changed from PUT to DELETE
 export const restoreAllTasks = async () => {
   const token = getToken();
-  const response = await axios.put(`${API_URL}/restore-all`, {}, {
+  const response = await axios.delete(`${API_URL}/delete-restore?actionType=restoreAll`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
 
+// ✅ Permanently delete all tasks
 export const permanentDeleteAllTasks = async () => {
   const token = getToken();
-  const response = await axios.delete(`${API_URL}/delete-all`, {
+  const response = await axios.delete(`${API_URL}/delete-restore?actionType=deleteAll`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;

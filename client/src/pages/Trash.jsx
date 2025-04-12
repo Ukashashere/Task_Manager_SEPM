@@ -76,7 +76,7 @@ const Trash = () => {
   const deleteRestoreHandler = async () => {
     try {
       if (type === "restore") {
-        await restoreTask(selected);
+        await restoreTask(selected); // ✅ Now uses query param correctly
         toast.success("Task restored");
       } else if (type === "delete") {
         await permanentDeleteTask(selected);

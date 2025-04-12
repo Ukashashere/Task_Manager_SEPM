@@ -11,7 +11,6 @@ import {
   postTaskActivity,
   trashTask,
   updateTask,
-  
 } from "../controllers/taskController.js";
 import { isAdminRoute, protectRoute } from "../middlewares/authMiddlewave.js";
 
@@ -27,16 +26,13 @@ router.get("/trash", protectRoute, getTrashedTasks);
 router.get("/:id", protectRoute, getTask);
 
 router.put("/create-subtask/:id", protectRoute, isAdminRoute, createSubTask);
-router.put("/trash/:id", protectRoute, trashTask);
+router.put("/trash/:id", protectRoute, trashTask); // For trashing tasks
+router.put("/restore/:id", protectRoute,  deleteRestoreTask); // ✅ new route for restoring
+router.put("/restore-all", protectRoute,  deleteRestoreTask);  // ✅ restore all
 router.put("/:id", protectRoute, updateTask);
 
-
-router.delete(
-  "/delete-restore/:id?",
-  protectRoute,
-  isAdminRoute,
-  deleteRestoreTask
-);
-
+// DELETE /delete-restore/:id
+router.delete("/delete/:id", protectRoute, deleteRestoreTask); // ✅ now only for deleting
+router.delete("/delete-all", protectRoute, deleteRestoreTask); // ✅ delete all
 
 export default router;

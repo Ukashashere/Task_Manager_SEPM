@@ -42,6 +42,7 @@ export const duplicateTask = async (req, res) => {
   try {
     const { id } = req.params;
     const task = await Task.findById(id);
+    if (!task) return res.status(404).json({ status: false, message: "Task not found." });
 
     const newTask = await Task.create({
       ...task.toObject(),
@@ -83,9 +84,9 @@ export const postTaskActivity = async (req, res) => {
     const { type, activity } = req.body;
 
     const task = await Task.findById(id);
-    const data = { type, activity, by: userId };
+    if (!task) return res.status(404).json({ status: false, message: "Task not found." });
 
-    task.activities.push(data);
+    task.activities.push({ type, activity, by: userId });
     await task.save();
 
     res.status(200).json({ status: true, message: "Activity posted successfully." });
@@ -104,10 +105,7 @@ export const dashboardStatistics = async (req, res) => {
       ? await Task.find({ isTrashed: false }).populate("team", "name role title email").sort({ _id: -1 })
       : await Task.find({ isTrashed: false, team: { $all: [userId] } }).populate("team", "name role title email").sort({ _id: -1 });
 
-    const users = await User.find({ isActive: true })
-      .select("name title role isAdmin createdAt")
-      .limit(10)
-      .sort({ _id: -1 });
+    const users = await User.find({ isActive: true }).select("name title role isAdmin createdAt").limit(10).sort({ _id: -1 });
 
     const groupTaskks = allTasks.reduce((result, task) => {
       const stage = task.stage;
@@ -122,14 +120,11 @@ export const dashboardStatistics = async (req, res) => {
       }, {})
     ).map(([name, total]) => ({ name, total }));
 
-    const totalTasks = allTasks.length;
-    const last10Task = allTasks.slice(0, 10);
-
     res.status(200).json({
       status: true,
       message: "Successfully",
-      totalTasks,
-      last10Task,
+      totalTasks: allTasks.length,
+      last10Task: allTasks.slice(0, 10),
       users: isAdmin ? users : [],
       tasks: groupTaskks,
       graphData: groupData,
@@ -140,18 +135,14 @@ export const dashboardStatistics = async (req, res) => {
   }
 };
 
-// ✅ Get all tasks (filters out trashed by default)
+// ✅ Get all tasks
 export const getTasks = async (req, res) => {
   try {
     const { stage, isTrashed } = req.query;
 
     const query = {};
     if (stage) query.stage = stage;
-    if (isTrashed !== undefined) {
-      query.isTrashed = isTrashed === "true";
-    } else {
-      query.isTrashed = false;
-    }
+    query.isTrashed = isTrashed === "true";
 
     const tasks = await Task.find(query).populate("team", "name title email").sort({ _id: -1 });
 
@@ -170,6 +161,8 @@ export const getTask = async (req, res) => {
       .populate("team", "name title role email")
       .populate("activities.by", "name");
 
+    if (!task) return res.status(404).json({ status: false, message: "Task not found." });
+
     res.status(200).json({ status: true, task });
   } catch (error) {
     console.log(error);
@@ -183,11 +176,10 @@ export const createSubTask = async (req, res) => {
     const { title, tag, date } = req.body;
     const { id } = req.params;
 
-    const newSubTask = { title, date, tag };
-
     const task = await Task.findById(id);
-    task.subTasks.push(newSubTask);
+    if (!task) return res.status(404).json({ status: false, message: "Task not found." });
 
+    task.subTasks.push({ title, tag, date });
     await task.save();
 
     res.status(200).json({ status: true, message: "SubTask added successfully." });
@@ -204,6 +196,7 @@ export const updateTask = async (req, res) => {
     const { title, date, team, stage, priority, assets } = req.body;
 
     const task = await Task.findById(id);
+    if (!task) return res.status(404).json({ status: false, message: "Task not found." });
 
     task.title = title;
     task.date = date;
@@ -227,8 +220,9 @@ export const trashTask = async (req, res) => {
     const { id } = req.params;
 
     const task = await Task.findById(id);
-    task.isTrashed = true;
+    if (!task) return res.status(404).json({ status: false, message: "Task not found." });
 
+    task.isTrashed = true;
     await task.save();
 
     res.status(200).json({ status: true, message: `Task trashed successfully.` });
@@ -239,38 +233,77 @@ export const trashTask = async (req, res) => {
 };
 
 // ✅ Delete or Restore task(s)
+// ✅ Delete or Restore task(s)
 export const deleteRestoreTask = async (req, res) => {
+  const { id } = req.params;
+  const rawAction = req.query.actionType;
+  const actionType = rawAction?.toLowerCase().trim();
+
+  console.log("🧩 Raw actionType from query:", rawAction);
+  console.log("🔍 Cleaned actionType:", actionType);
+
+  if (!id || !actionType) {
+    return res.status(400).json({
+      status: false,
+      message: "Missing task ID or actionType.",
+    });
+  }
+
   try {
-    const { id } = req.params;
-    const { actionType } = req.query;
+    let updatedTask;
 
-    if (actionType === "delete") {
-      await Task.findByIdAndDelete(id);
-    } else if (actionType === "deleteAll") {
-      await Task.deleteMany({ isTrashed: true });
-    } else if (actionType === "restore") {
-      const resp = await Task.findById(id);
-      resp.isTrashed = false;
-      await resp.save();
-    } else if (actionType === "restoreAll") {
-      await Task.updateMany({ isTrashed: true }, { $set: { isTrashed: false } });
+    switch (actionType) {
+      case "trash":
+        updatedTask = await Task.findByIdAndUpdate(
+          id,
+          { isTrashed: true },
+          { new: true }
+        );
+        return res.status(200).json({
+          status: true,
+          message: "Task trashed successfully.",
+          data: updatedTask,
+        });
+
+      case "restore":
+        updatedTask = await Task.findByIdAndUpdate(
+          id,
+          { isTrashed: false },
+          { new: true }
+        );
+        return res.status(200).json({
+          status: true,
+          message: "Task restored successfully.",
+          data: updatedTask,
+        });
+
+      default:
+        return res.status(400).json({
+          status: false,
+          message: "Invalid actionType.",
+        });
     }
+  } catch (error) {
+    console.error("❌ Error in deleteRestoreTask:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error.",
+    });
+  }
+};
 
-    res.status(200).json({ status: true, message: `Operation performed successfully.` });
+
+
+
+
+
+// ✅ Get trashed tasks
+export const getTrashedTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({ isTrashed: true }).sort({ updatedAt: -1 });
+    res.status(200).json({ status: true, tasks });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
   }
 };
-
-// GET /api/tasks/trash
-export const getTrashedTasks = async (req, res) => {
-  try {
-    const tasks = await Task.find({ isTrashed: true }).populate("team", "name title email");
-    res.status(200).json({ status: true, tasks });
-  } catch (error) {
-    console.error("Error fetching trashed tasks:", error.message);
-    res.status(500).json({ status: false, message: "Failed to fetch trashed tasks." });
-  }
-};
-
