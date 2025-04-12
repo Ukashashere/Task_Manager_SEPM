@@ -320,3 +320,48 @@ export const getTrashedTasks = async (req, res) => {
     return res.status(400).json({ status: false, message: error.message });
   }
 };
+// ✅ Permanently delete a single task
+export const permanentlyDeleteTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const task = await Task.findById(id);
+
+    if (!task) {
+      return res.status(404).json({ status: false, message: "Task not found." });
+    }
+
+    if (!task.isTrashed) {
+      return res.status(400).json({ status: false, message: "Task must be trashed before permanent deletion." });
+    }
+
+    await Task.findByIdAndDelete(id);
+    await Notice.deleteMany({ task: id });
+
+    res.status(200).json({ status: true, message: "Task permanently deleted." });
+  } catch (error) {
+    console.error("❌ Error in permanentlyDeleteTask:", error);
+    return res.status(500).json({ status: false, message: "Server error." });
+  }
+};
+
+// ✅ Permanently delete all trashed tasks
+export const permanentlyDeleteAllTasks = async (req, res) => {
+  try {
+    const trashedTasks = await Task.find({ isTrashed: true });
+
+    if (trashedTasks.length === 0) {
+      return res.status(404).json({ status: false, message: "No trashed tasks to delete." });
+    }
+
+    const trashedTaskIds = trashedTasks.map(task => task._id);
+
+    await Task.deleteMany({ _id: { $in: trashedTaskIds } });
+    await Notice.deleteMany({ task: { $in: trashedTaskIds } });
+
+    res.status(200).json({ status: true, message: "All trashed tasks permanently deleted." });
+  } catch (error) {
+    console.error("❌ Error in permanentlyDeleteAllTasks:", error);
+    return res.status(500).json({ status: false, message: "Server error." });
+  }
+};

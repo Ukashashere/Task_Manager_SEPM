@@ -57,7 +57,7 @@ export const restoreTask = async (taskId) => {
 export const permanentDeleteTask = async (taskId) => {
   const token = getToken();
   const response = await axios.delete(
-    `${API_URL}/delete-restore/${taskId}?actionType=delete`,
+    `${API_URL}/delete/${taskId}?actionType=delete`,
     {
       headers: { Authorization: `Bearer ${token}` },
     }
@@ -82,7 +82,7 @@ export const restoreAllTasks = async () => {
 // ✅ Permanently delete all tasks
 export const permanentDeleteAllTasks = async () => {
   const token = getToken();
-  const response = await axios.delete(`${API_URL}/delete-restore?actionType=deleteAll`, {
+  const response = await axios.delete(`${API_URL}/delete-all?actionType=deleteAll`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;

@@ -11,9 +11,12 @@ import {
   postTaskActivity,
   trashTask,
   updateTask,
-  restoreAllTasks,  // Import the restoreAllTasks function
+  restoreAllTasks,
+  permanentlyDeleteTask,
+  permanentlyDeleteAllTasks,  // Import the restoreAllTasks function
 } from "../controllers/taskController.js";
 import { isAdminRoute, protectRoute } from "../middlewares/authMiddlewave.js";
+import { permanentDeleteTask } from "../../client/src/utils/taskservice.js";
 
 const router = express.Router();
 
@@ -33,7 +36,7 @@ router.put("/restore-all", protectRoute, restoreAllTasks);  // ✅ new route for
 router.put("/:id", protectRoute, updateTask);
 
 // DELETE /delete-restore/:id
-router.delete("/delete/:id", protectRoute, deleteRestoreTask); // ✅ now only for deleting
-router.delete("/delete-all", protectRoute, deleteRestoreTask); // ✅ delete all
+router.delete("/delete/:id", protectRoute, permanentlyDeleteTask); // ✅ now only for deleting
+router.delete("/delete-all", protectRoute, permanentlyDeleteAllTasks); // ✅ delete all
 
 export default router;
