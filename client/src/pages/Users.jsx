@@ -6,11 +6,13 @@ import { getInitials } from "../utils";
 import clsx from "clsx";
 import ConfirmationDialog, { UserAction } from "../components/Dialogs";
 import AddUser from "../components/AddUser";
+import AddUserForm from "../components/AddUserForm"; // Import the new form
 import { authApi } from "../utils/authApi";
 
 const Users = () => {
   const [openDialog, setOpenDialog] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [openEditForm, setOpenEditForm] = useState(false); // For edit
+  const [openAddForm, setOpenAddForm] = useState(false); // For add new
   const [openAction, setOpenAction] = useState(false);
   const [selected, setSelected] = useState(null);
   const [users, setUsers] = useState([]);
@@ -44,7 +46,6 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  // 🗑️ Called when user clicks delete button
   const deleteClick = (id) => {
     const user = users.find((u) => u._id === id);
     setSelected(id);
@@ -52,16 +53,14 @@ const Users = () => {
     setOpenDialog(true);
   };
 
-  // ✏️ Called when user clicks edit button
-  const editClick = (el) => {
-    setSelected(el);
-    setOpen(true);
+  const editClick = (user) => {
+    setSelected(user);
+    setOpenEditForm(true); // Open edit form
   };
 
-  // ✅ Deletion logic passed to ConfirmationDialog
   const handleDelete = async () => {
     try {
-      await authApi.deleteUser(selected, token); // assuming deleteUser takes (id, token)
+      await authApi.deleteUser(selected, token);
       fetchUsers();
     } catch (error) {
       console.error("Failed to delete user:", error.message);
@@ -138,8 +137,8 @@ const Users = () => {
             icon={<IoMdAdd className="text-lg" />}
             className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md 2xl:py-2.5"
             onClick={() => {
-              setSelected(null); // clear selected user before adding
-              setOpen(true);
+              setSelected(null); // Clear selected user
+              setOpenAddForm(true); // Open add form
             }}
           />
         </div>
@@ -158,10 +157,18 @@ const Users = () => {
         </div>
       </div>
 
+      {/* Edit User Form (Prefilled) */}
       <AddUser
-        open={open}
-        setOpen={setOpen}
+        open={openEditForm}
+        setOpen={setOpenEditForm}
         userData={selected}
+        refetch={fetchUsers}
+      />
+
+      {/* Add New User Form (Empty) */}
+      <AddUserForm
+        open={openAddForm}
+        setOpen={setOpenAddForm}
         refetch={fetchUsers}
       />
 
