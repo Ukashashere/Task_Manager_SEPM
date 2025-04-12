@@ -15,8 +15,7 @@ export default function ConfirmationDialog({
   setType = () => {},
 }) {
   const closeDialog = () => {
-    setType("delete");
-    setMsg(null);
+  
     setOpen(false);
   };
 
