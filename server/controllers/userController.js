@@ -167,13 +167,13 @@ export const markNotificationRead = async (req, res) => {
   }
 };
 
+
 export const changeUserPassword = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.userId; // Decoded from JWT
     const { oldPassword, newPassword } = req.body;
 
     const user = await User.findById(userId);
-
     if (!user) {
       return res.status(404).json({ status: false, message: "User not found" });
     }
@@ -183,16 +183,20 @@ export const changeUserPassword = async (req, res) => {
       return res.status(400).json({ status: false, message: "Incorrect old password" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    // ✅ Just assign new password, let Mongoose pre-save hook hash it
+    user.password = newPassword;
 
     await user.save();
-    res.status(200).json({ status: true, message: "Password changed successfully" });
+
+    return res.status(200).json({ status: true, message: "Password changed successfully" });
   } catch (error) {
-    console.error("❌ Error changing password:", error);
+    console.error("Error changing password:", error);
     return res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
+
+
+
 export const activateUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
