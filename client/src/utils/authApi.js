@@ -1,4 +1,3 @@
-// src/utils/authApi.js
 import axios from "axios";
 
 const API_URL = "http://localhost:8800/api/user"; // Replace with your backend URL
@@ -40,7 +39,7 @@ export const authApi = {
   // Fetch all users (Admin Only)
   getUsers: async (token) => {
     try {
-      const response = await axios.get(`${API_URL}/all`, {  // Ensure backend has this route
+      const response = await axios.get(`${API_URL}/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -53,6 +52,22 @@ export const authApi = {
     }
   },
 
+  // Delete user by ID (Admin Only)
+  deleteUser: async (userId, token) => {
+    try {
+      const response = await axios.delete(`${API_URL}/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log("User deleted successfully:", response.data); // Debugging
+      return response.data;
+    } catch (error) {
+      console.error("Delete user error:", error.response?.data || error.message);
+      return { success: false, message: error.response?.data?.message || "Failed to delete user." };
+    }
+  },
+
+  // Change Password API
   changePassword: async (passwords, token) => {
     const res = await fetch(`${API_URL}/change-password`, {
       method: "PUT",
@@ -62,14 +77,13 @@ export const authApi = {
       },
       body: JSON.stringify(passwords),
     });
-  
+
     const data = await res.json();
-  
+
     if (!res.ok) {
       throw new Error(data.message || "Failed to change password");
     }
-  
+
     return data;
   },
-  
 };
