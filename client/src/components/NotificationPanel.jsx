@@ -20,16 +20,16 @@ const ICONS = {
   ),
 };
 
+// ...imports remain unchanged
+
 const NotificationPanel = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
 
-  const isNotificationRead = (noti) => {
-    if (!Array.isArray(noti.isRead)) return false;
-    return noti.isRead.includes(user._id);
-  };
+  // ✅ Now uses isReadByUser directly
+  const isNotificationRead = (noti) => noti.isReadByUser;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,12 +54,7 @@ const NotificationPanel = () => {
       setNotifications((prev) =>
         prev.map((noti) =>
           noti._id === id
-            ? {
-                ...noti,
-                isRead: Array.isArray(noti.isRead)
-                  ? [...noti.isRead, user._id]
-                  : [user._id],
-              }
+            ? { ...noti, isReadByUser: true }
             : noti
         )
       );
@@ -70,19 +65,14 @@ const NotificationPanel = () => {
 
   const markAllRead = async () => {
     try {
-      const unread = notifications.filter((n) => !isNotificationRead(n));
+      const unread = notifications.filter((n) => !n.isReadByUser);
       for (const noti of unread) {
         await markNotificationAsRead(noti._id, user.token);
       }
       setNotifications((prev) =>
         prev.map((n) =>
-          !isNotificationRead(n)
-            ? {
-                ...n,
-                isRead: Array.isArray(n.isRead)
-                  ? [...n.isRead, user._id]
-                  : [user._id],
-              }
+          !n.isReadByUser
+            ? { ...n, isReadByUser: true }
             : n
         )
       );
@@ -92,7 +82,7 @@ const NotificationPanel = () => {
   };
 
   const viewHandler = (item) => {
-    if (!isNotificationRead(item)) {
+    if (!item.isReadByUser) {
       readHandler(item._id);
     }
   };
@@ -102,7 +92,7 @@ const NotificationPanel = () => {
     { name: "Mark All Read", onClick: markAllRead },
   ];
 
-  const unreadCount = notifications.filter((n) => !isNotificationRead(n)).length;
+  const unreadCount = notifications.filter((n) => !n.isReadByUser).length;
 
   return (
     <>
