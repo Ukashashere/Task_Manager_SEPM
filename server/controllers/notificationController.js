@@ -16,7 +16,7 @@ export const getUserNotifications = async (req, res) => {
 
     const data = notifications.map((n) => ({
       ...n._doc,
-      isRead: n.isRead.includes(userId),
+      isReadByUser: n.isRead.includes(userId), // 👈 New field added
     }));
 
     res.status(200).json({ status: true, notifications: data });
