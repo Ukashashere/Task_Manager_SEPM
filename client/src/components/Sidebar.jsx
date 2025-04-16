@@ -3,7 +3,6 @@ import {
   MdDashboard,
   MdOutlineAddTask,
   MdOutlinePendingActions,
-  MdSettings,
   MdTaskAlt,
 } from "react-icons/md";
 import { FaTasks, FaTrashAlt, FaUsers } from "react-icons/fa";
@@ -24,9 +23,9 @@ const linkData = [
     icon: <FaTasks />,
   },
   {
-    label: "Completed",
-    link: "completed",
-    icon: <MdTaskAlt />,
+    label: "To Do",
+    link: "todo",
+    icon: <MdOutlinePendingActions />,
   },
   {
     label: "In Progress",
@@ -34,9 +33,9 @@ const linkData = [
     icon: <MdOutlinePendingActions />,
   },
   {
-    label: "To Do",
-    link: "todo",
-    icon: <MdOutlinePendingActions />,
+    label: "Completed",
+    link: "completed",
+    icon: <MdTaskAlt />,
   },
   {
     label: "Team",
@@ -52,40 +51,35 @@ const linkData = [
 
 const Sidebar = () => {
   const { user } = useSelector((state) => state.auth);
-  console.log("User in Sidebar:", user); // Debugging
-
   const dispatch = useDispatch();
   const location = useLocation();
-
   const path = location.pathname.split("/")[1];
 
   // Filter links based on user role
-  const sidebarLinks = user?.role === "Admin"
-    ? linkData // Show all links for admin
-    : linkData.filter(
-        (link) =>
-          link.label !== "Trash" && link.label !== "Team" // Hide Trash and Team for non-admin
-      );
+  const sidebarLinks =
+    user?.role === "Admin"
+      ? linkData
+      : linkData.filter(
+          (link) => link.label !== "Trash" && link.label !== "Team"
+        );
 
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };
 
-  const NavLink = ({ el }) => {
-    return (
-      <Link
-        to={el.link}
-        onClick={closeSidebar}
-        className={clsx(
-          "w-full lg:w-3/4 flex gap-2 px-3 py-2 rounded-full items-center text-gray-800 text-base hover:bg-[#2564ed2d]",
-          path === el.link.split("/")[0] ? "bg-blue-700 text-neutral-100" : ""
-        )}
-      >
-        {el.icon}
-        <span className='hover:text-[#2564ed]'>{el.label}</span>
-      </Link>
-    );
-  };
+  const NavLink = ({ el }) => (
+    <Link
+      to={el.link}
+      onClick={closeSidebar}
+      className={clsx(
+        "w-full lg:w-3/4 flex gap-2 px-3 py-2 rounded-full items-center text-gray-800 text-base hover:bg-[#2564ed2d]",
+        path === el.link.split("/")[0] ? "bg-blue-700 text-neutral-100" : ""
+      )}
+    >
+      {el.icon}
+      <span className='hover:text-[#2564ed]'>{el.label}</span>
+    </Link>
+  );
 
   return (
     <div className='w-full h-full flex flex-col gap-6 p-5'>
@@ -100,13 +94,6 @@ const Sidebar = () => {
         {sidebarLinks.map((link) => (
           <NavLink el={link} key={link.label} />
         ))}
-      </div>
-
-      <div className=''>
-        <button className='w-full flex gap-2 p-2 items-center text-lg text-gray-800'>
-          <MdSettings />
-          <span>Settings</span>
-        </button>
       </div>
     </div>
   );
