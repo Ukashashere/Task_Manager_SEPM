@@ -41,7 +41,7 @@ const AddUser = ({ open, setOpen, userData, refetch }) => {
 
   const handleOnSubmit = async (data) => {
     try {
-      const baseURL = "http://localhost:8800/api"; // ✅ Hardcoded API base URL
+      const baseURL = "https://task-manager-sepm.onrender.com/api"; // ✅ Hardcoded API base URL
 
       const url = userData
         ? `${baseURL}/user/${userData._id}`

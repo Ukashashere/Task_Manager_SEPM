@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8800/api/tasks";
+const API_URL = "https://task-manager-sepm.onrender.com/api/tasks";
 
 const getToken = () => {
   const token = localStorage.getItem("token");
